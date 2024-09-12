@@ -11,7 +11,9 @@ from django.http import JsonResponse
 from rest_framework import status
 from drf_yasg import openapi
 import requests
+from typing import Dict, Any, List, Union, Optional
 
+# URL для доступа к API Яндекс.Диска
 YANDEX_DISK_API_URL = 'https://cloud-api.yandex.net/v1/disk/public/resources'
 
 
@@ -21,11 +23,20 @@ YANDEX_DISK_API_URL = 'https://cloud-api.yandex.net/v1/disk/public/resources'
     operation_description="Register a new user"
 )
 @api_view(['POST'])
-def register(request):
-    data = request.data
-    email = data.get('email')
-    username = data.get('username')
-    password = data.get('password')
+def register(request) -> Response:
+    """
+    Регистрация нового пользователя.
+
+    Args:
+        request: Объект запроса, содержащий данные пользователя (email, username, password).
+
+    Returns:
+        Response: Возвращает сообщение о результате регистрации, JWT токены и данные пользователя.
+    """
+    data: Dict[str, Any] = request.data
+    email: Optional[str] = data.get('email')
+    username: Optional[str] = data.get('username')
+    password: Optional[str] = data.get('password')
 
     if not email or not username or not password:
         return Response({'errors': 'All fields are required'}, status=status.HTTP_400_BAD_REQUEST)
@@ -36,11 +47,11 @@ def register(request):
     if User.objects.filter(email=email).exists():
         return Response({'errors': 'Email already exists'}, status=status.HTTP_400_BAD_REQUEST)
 
-    user = User.objects.create_user(username=username, email=email, password=password)
+    user: User = User.objects.create_user(username=username, email=email, password=password)
 
-    refresh = RefreshToken.for_user(user)
-    access_token = str(refresh.access_token)
-    refresh_token = str(refresh)
+    refresh: RefreshToken = RefreshToken.for_user(user)
+    access_token: str = str(refresh.access_token)
+    refresh_token: str = str(refresh)
 
     return Response({
         'message': 'Register successful',
@@ -60,18 +71,27 @@ def register(request):
     operation_description="Login a user"
 )
 @api_view(['POST'])
-def login_user(request):
-    data = request.data
-    username = data.get('username')
-    password = data.get('password')
+def login_user(request) -> Response:
+    """
+    Авторизация пользователя.
 
-    user = authenticate(username=username, password=password)
+    Args:
+        request: Объект запроса, содержащий данные для входа (username, password).
+
+    Returns:
+        Response: Возвращает JWT токены и данные пользователя.
+    """
+    data: Dict[str, Any] = request.data
+    username: Optional[str] = data.get('username')
+    password: Optional[str] = data.get('password')
+
+    user: Optional[User] = authenticate(username=username, password=password)
     if user is not None:
         login(request, user)
 
-        refresh = RefreshToken.for_user(user)
-        access_token = str(refresh.access_token)
-        refresh_token = str(refresh)
+        refresh: RefreshToken = RefreshToken.for_user(user)
+        access_token: str = str(refresh.access_token)
+        refresh_token: str = str(refresh)
 
         return Response({
             'message': 'Login successful',
@@ -83,6 +103,8 @@ def login_user(request):
                 'username': user.username,
             }
         }, status=status.HTTP_200_OK)
+    else:
+        return Response({'errors': 'Invalid credentials'}, status=status.HTTP_401_UNAUTHORIZED)
 
 
 @csrf_exempt
@@ -92,9 +114,18 @@ def login_user(request):
 )
 @api_view(['POST'])
 @permission_classes([IsAuthenticated])
-def logout_user(request):
+def logout_user(request) -> JsonResponse:
+    """
+    Выход пользователя из системы.
+
+    Args:
+        request: Объект запроса.
+
+    Returns:
+        JsonResponse: Сообщение о выходе и удалении токенов из cookies.
+    """
     logout(request)
-    response = JsonResponse({'message': 'Logout successful'})
+    response: JsonResponse = JsonResponse({'message': 'Logout successful'})
     response.delete_cookie('access_token')
     response.delete_cookie('refresh_token')
     return response
@@ -128,30 +159,36 @@ def logout_user(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def get_files(request):
-    public_url = request.GET.get('public_url')
+def get_files(request) -> Response:
+    """
+    Получить список файлов по публичной ссылке Яндекс.Диска.
+
+    Args:
+        request: Объект запроса, содержащий публичную ссылку (public_url).
+
+    Returns:
+        Response: Возвращает список файлов или сообщение об ошибке.
+    """
+    public_url: Optional[str] = request.GET.get('public_url')
     if not public_url:
         return Response({'error': 'Public URL is required'}, status=400)
 
     try:
-        response = requests.get(f'{YANDEX_DISK_API_URL}?public_key={public_url}')
+        response: requests.Response = requests.get(f'{YANDEX_DISK_API_URL}?public_key={public_url}')
         response.raise_for_status()
     except requests.exceptions.RequestException as e:
         return Response({'error': f'Unable to fetch files: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)
 
-    data = response.json()
+    data: Dict[str, Any] = response.json()
 
-    # Check if it is a directory or a file
     if 'file' in data:
-        # If it is a file, add it to the list as a single item
-        files = [{
+        files: List[Dict[str, Any]] = [{
             'name': data.get('name'),
             'type': 'file',
             'path': data.get('file')
         }]
     else:
-        # If it is a directory, get all the files inside it
-        items = data.get('_embedded', {}).get('items', [])
+        items: List[Dict[str, Any]] = data.get('_embedded', {}).get('items', [])
         files = [{'name': item.get('name'), 'type': item.get('type'), 'path': item.get('file')} for item in items]
 
     return Response({'files': files}, status=200)
@@ -182,13 +219,21 @@ def get_files(request):
 )
 @api_view(['GET'])
 @permission_classes([IsAuthenticated])
-def download_file(request):
-    download_link = request.GET.get('download_url')
+def download_file(request) -> Response:
+    """
+    Скачать файл по публичной ссылке.
+
+    Args:
+        request: Объект запроса, содержащий ссылку на скачивание (download_url).
+
+    Returns:
+        Response: Возвращает URL для скачивания или сообщение об ошибке.
+    """
+    download_link: Optional[str] = request.GET.get('download_url')
     if not download_link:
         return Response({'error': 'Download link not found'}, status=status.HTTP_400_BAD_REQUEST)
 
     try:
-        # Redirect the user to download the file using the provided link
         return Response({'redirect_url': download_link}, status=200)
     except requests.exceptions.RequestException as e:
         return Response({'error': f'Failed to download file: {str(e)}'}, status=status.HTTP_500_INTERNAL_SERVER_ERROR)

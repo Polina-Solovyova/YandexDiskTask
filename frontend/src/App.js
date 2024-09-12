@@ -11,8 +11,12 @@ import axiosInstance from "./utils/api/axiosConfig";
 
 const cookies = new Cookies();
 
-const App = () => {
-  const [isAuth, setIsAuth] = useState(false);
+/**
+ * Основное приложение, обеспечивающее роутинг и управление состоянием аутентификации.
+ * @returns JSX.Element
+ */
+const App: React.FC = () => {
+  const [isAuth, setIsAuth] = useState<boolean>(false); // Состояние аутентификации пользователя
 
   return (
     <UserProvider>
@@ -23,15 +27,28 @@ const App = () => {
   );
 };
 
-const AppContent = ({ setIsAuth }) => {
+interface AppContentProps {
+  setIsAuth: React.Dispatch<React.SetStateAction<boolean>>;
+}
+
+/**
+ * Компонент, который управляет контентом приложения в зависимости от состояния аутентификации.
+ * @param setIsAuth - Функция для обновления состояния аутентификации.
+ * @returns JSX.Element
+ */
+const AppContent: React.FC<AppContentProps> = ({ setIsAuth }) => {
   const navigate = useNavigate();
   const location = useLocation();
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const [isAuthenticated, setIsAuthenticated] = useState<boolean>(false); // Локальное состояние аутентификации
 
+  /**
+   * Проверка на наличие токена и обновление токена при монтировании компонента.
+   * Если токен недействителен, пользователь перенаправляется на страницу логина.
+   */
   useEffect(() => {
     const token = cookies.get('access_token');
     if (token) {
-      // Trying to update the token and check its validity
+      // Попытка обновить токен и проверить его валидность
       axiosInstance.post('/refresh/', { refresh: cookies.get('refresh_token') })
         .then(response => {
           setIsAuthenticated(true);
@@ -46,6 +63,7 @@ const AppContent = ({ setIsAuth }) => {
     }
   }, [navigate]);
 
+  // Показывать ли хедер и футер в зависимости от текущего пути
   const showHeaderFooter = location.pathname === '/';
 
   return (
@@ -66,19 +84,24 @@ const AppContent = ({ setIsAuth }) => {
   );
 };
 
-const Logout = () => {
+/**
+ * Компонент для выхода из системы. При монтировании вызывается функция logout и происходит переход на страницу логина.
+ * @returns JSX.Element
+ */
+const Logout: React.FC = () => {
   const navigate = useNavigate();
 
-  React.useEffect(() => {
+  // Эффект для выполнения выхода при монтировании компонента
+  useEffect(() => {
     const performLogout = async () => {
-      await handleLogout();
-      navigate('/login');
+      await handleLogout(); // Функция для выхода пользователя
+      navigate('/login'); // Перенаправление на страницу логина после выхода
     };
 
     performLogout();
   }, [navigate]);
 
-  return <p>Logging out...</p>;
+  return <p>Logging out...</p>; // Информативное сообщение при выходе
 };
 
 export default App;

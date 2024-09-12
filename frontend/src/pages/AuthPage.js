@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, FormEvent } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import axiosInstance from "../utils/api/axiosConfig";
 import Cookies from 'universal-cookie';
@@ -6,8 +6,12 @@ import '../styles/AuthPage.css';
 
 const cookies = new Cookies();
 
-export const handleLogout = async () => {
-  const token = cookies.get('access_token');
+/**
+ * Обработчик выхода пользователя из системы.
+ * Удаляет токены из cookies и отправляет запрос на сервер для выхода.
+ */
+export const handleLogout = async (): Promise<void> => {
+  const token: string | undefined = cookies.get('access_token');
 
   if (!token) {
     console.error('No access token found');
@@ -28,11 +32,21 @@ export const handleLogout = async () => {
   }
 };
 
-const AuthPage = ({ setIsAuth, isRegistration }) => {
-  const [username, setUsername] = useState('');
-  const [email, setEmail] = useState('');
-  const [password, setPassword] = useState('');
-  const [error, setError] = useState(null);
+interface AuthPageProps {
+  setIsAuth: (authState: boolean) => void;
+  isRegistration: boolean;
+}
+
+/**
+ * Компонент страницы авторизации и регистрации.
+ * @param {AuthPageProps} props - Свойства компонента: `setIsAuth` и `isRegistration`.
+ * @returns JSX.Element
+ */
+const AuthPage: React.FC<AuthPageProps> = ({ setIsAuth, isRegistration }) => {
+  const [username, setUsername] = useState<string>('');
+  const [email, setEmail] = useState<string>('');
+  const [password, setPassword] = useState<string>('');
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -74,7 +88,12 @@ const AuthPage = ({ setIsAuth, isRegistration }) => {
     };
   }, []);
 
-  const parseJwt = (token) => {
+  /**
+   * Функция для парсинга JWT токена.
+   * @param {string} token - JWT токен.
+   * @returns {any} - Распарсенные данные из токена или null.
+   */
+  const parseJwt = (token: string): any => {
     try {
       return JSON.parse(atob(token.split('.')[1]));
     } catch (e) {
@@ -82,12 +101,17 @@ const AuthPage = ({ setIsAuth, isRegistration }) => {
     }
   };
 
-  const handleSubmit = async (e) => {
+  /**
+   * Обработчик отправки формы.
+   * Отправляет запрос на сервер для авторизации или регистрации.
+   * @param {FormEvent} e - Событие отправки формы.
+   */
+  const handleSubmit = async (e: FormEvent): Promise<void> => {
     e.preventDefault();
-    const url = isRegistration ? '/register/' : '/login/';
+    const url: string = isRegistration ? '/register/' : '/login/';
 
     try {
-      const data = {
+      const data: { username: string; password: string; email?: string } = {
         username: username,
         password: password,
       };
@@ -109,16 +133,14 @@ const AuthPage = ({ setIsAuth, isRegistration }) => {
 
       cookies.set('access_token', access_token, { path: '/' });
       cookies.set('refresh_token', refresh_token, { path: '/' });
-      console.log(cookies)
       setIsAuth(true);
       navigate('/');
-    } catch (error) {
+    } catch (error: any) {
       console.error('Authentication failed', error.response || error);
-      const errorMsg = error.response?.data?.detail || 'Authentication failed. Please check your credentials.';
+      const errorMsg: string = error.response?.data?.detail || 'Authentication failed. Please check your credentials.';
       setError(errorMsg);
     }
   };
-
 
   return (
     <div className="auth-container">

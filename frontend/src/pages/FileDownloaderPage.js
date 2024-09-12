@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, ChangeEvent, MouseEvent } from 'react';
 import axiosInstance from "../utils/api/axiosConfig";
 import { useNavigate } from 'react-router-dom';
 import '../styles/FileDownloaderPage.css';
@@ -7,16 +7,29 @@ import Cookies from "universal-cookie";
 
 const cookies = new Cookies();
 
-const FileDownloaderPage = () => {
-  const [publicUrl, setPublicUrl] = useState('');
-  const [files, setFiles] = useState([]);
-  const [filteredFiles, setFilteredFiles] = useState([]);
-  const [fileTypeFilter, setFileTypeFilter] = useState('all');
-  const [selectedFiles, setSelectedFiles] = useState([]);
-  const [cache, setCache] = useState({});
-  const [errorMessage, setErrorMessage] = useState('');
+interface File {
+  name: string;
+  path: string;
+}
+
+interface Cache {
+  [publicUrl: string]: File[];
+}
+
+/**
+ * Страница для загрузки файлов с публичной ссылки.
+ * @returns JSX.Element
+ */
+const FileDownloaderPage: React.FC = () => {
+  const [publicUrl, setPublicUrl] = useState<string>('');
+  const [files, setFiles] = useState<File[]>([]);
+  const [filteredFiles, setFilteredFiles] = useState<File[]>([]);
+  const [fileTypeFilter, setFileTypeFilter] = useState<string>('all');
+  const [selectedFiles, setSelectedFiles] = useState<File[]>([]);
+  const [cache, setCache] = useState<Cache>({});
+  const [errorMessage, setErrorMessage] = useState<string>('');
   const navigate = useNavigate();
-  const [viewMode, setViewMode] = useState('list');
+  const [viewMode, setViewMode] = useState<string>('list');
 
   const fileCategories = {
     images: ['image/jpeg', 'image/jpg', 'image/png', 'image/gif', 'image/heic'],
@@ -28,12 +41,16 @@ const FileDownloaderPage = () => {
     ],
   };
 
-  const fetchFiles = async () => {
+  /**
+   * Функция для получения списка файлов с публичной ссылки.
+   */
+  const fetchFiles = async (): Promise<void> => {
     setErrorMessage('');
     setFiles([]);
 
     if (!publicUrl) return;
 
+    // Проверка кэша для уже загруженной ссылки
     if (cache[publicUrl]) {
       setFiles(cache[publicUrl]);
     } else {
@@ -48,7 +65,7 @@ const FileDownloaderPage = () => {
           setFiles(response.data.files);
           setCache((prevCache) => ({ ...prevCache, [publicUrl]: response.data.files }));
         }
-      } catch (error) {
+      } catch (error: any) {
         console.error('Ошибка при загрузке файлов:', error);
         setFiles([]);
         if (error.response?.status === 401 || error.response?.status === 403) {
@@ -64,11 +81,20 @@ const FileDownloaderPage = () => {
     }
   };
 
-  const handleUrlChange = (e) => {
+  /**
+   * Обработчик изменения URL публичной ссылки.
+   * @param e - Событие изменения URL.
+   */
+  const handleUrlChange = (e: ChangeEvent<HTMLInputElement>): void => {
     setPublicUrl(e.target.value);
   };
 
-  const handleFileSelect = (file, e) => {
+  /**
+   * Обработчик выбора/отмены выбора файла.
+   * @param file - Выбранный файл.
+   * @param e - Событие клика.
+   */
+  const handleFileSelect = (file: File, e: MouseEvent<HTMLInputElement>): void => {
     e.stopPropagation();
     if (selectedFiles.includes(file)) {
       setSelectedFiles(selectedFiles.filter((f) => f !== file));
@@ -77,16 +103,25 @@ const FileDownloaderPage = () => {
     }
   };
 
-  const selectAllFiles = () => {
+  /**
+   * Выбор всех файлов на странице.
+   */
+  const selectAllFiles = (): void => {
     setSelectedFiles(filteredFiles);
   };
 
-  const clearSelection = () => {
+  /**
+   * Очистка выбора файлов.
+   */
+  const clearSelection = (): void => {
     setSelectedFiles([]);
   };
 
+  /**
+   * Фильтрация файлов по выбранному типу.
+   */
   useEffect(() => {
-    const extractContentType = (file) => {
+    const extractContentType = (file: File): string => {
       const match = file.path.match(/content_type=([^&]+)/);
       return match ? decodeURIComponent(match[1]) : '';
     };
@@ -102,7 +137,11 @@ const FileDownloaderPage = () => {
     }
   }, [fileCategories.documents, fileCategories.images, fileCategories.videos, fileTypeFilter, files]);
 
-  const downloadSingleFile = async (file) => {
+  /**
+   * Скачивание одного файла.
+   * @param file - Файл для скачивания.
+   */
+  const downloadSingleFile = async (file: File): Promise<void> => {
     try {
       const response = await axiosInstance.get(
         `/download/?download_url=${encodeURIComponent(file.path)}`
@@ -125,7 +164,10 @@ const FileDownloaderPage = () => {
     }
   };
 
-  const downloadFiles = async () => {
+  /**
+   * Скачивание выбранных файлов.
+   */
+  const downloadFiles = async (): Promise<void> => {
     try {
       const downloadPromises = selectedFiles.map(async (file) => {
         const response = await axiosInstance.get(
