@@ -1,0 +1,104 @@
+.FileDownloaderPage{
+  min-height: 85vh
+}
+
+.file-list {
+  display: block;
+}
+
+.file-item {
+  padding: 5px;
+  border-radius: 20px;
+  display: flex;
+  align-items: center;
+  justify-content: flex-start;
+}
+
+.file-item p {
+  margin: 10px;
+  -webkit-line-clamp: 2;
+  display: -webkit-box;
+  -webkit-box-orient: vertical;
+  overflow: hidden;
+}
+
+.file-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+}
+
+.file-item span {
+  width: 50px;
+  height: 50px;
+  font-size: 45px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  text-align: center;
+}
+
+
+.filter{
+  float: left;
+}
+
+.filter select{
+  height: 30px;
+  border-radius: 20px;
+  margin-right: 5px;
+  margin-left: 5px;
+  text-align: center;
+}
+
+.view-mode select{
+  height: 30px;
+  border-radius: 20px;
+}
+
+.download-contents {
+  position: fixed;
+  bottom: 60px;
+  left: 20px;
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
+}
+
+.download-contents button {
+  padding: 10px 20px;
+  border-radius: 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+.download-contents button:disabled {
+  background-color: #ccc;
+}
+
+.error-message{
+  margin-top: 10px;
+  text-align: center;
+}
+
+.file-list, .file-grid {
+  margin-top: 10px;
+  max-height: calc(100vh - 270px);
+  overflow-y: auto;
+}
+
+.input-group input[type="text"] {
+  border-radius: 20px;
+  background-color: #d6ecff;
+  width: 70%;
+  padding: 10px;
+  margin-bottom: 10px;
+  margin-right: 5px;
+}
+
+.input-group{
+  margin-top: 10px;
+  text-align: center;
+  align-content: center;
+}

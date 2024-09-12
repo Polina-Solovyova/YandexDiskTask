@@ -1,0 +1,86 @@
+.auth-container {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100vh;
+}
+
+.auth-box {
+    background-color: white;
+    padding: 40px;
+    border-radius: 15px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+    max-width: 400px;
+    width: 100%;
+    text-align: center;
+}
+
+h2 {
+    margin-bottom: 20px;
+    font-size: 24px;
+    color: #007bff;
+}
+
+.form-group {
+    margin-bottom: 15px;
+    text-align: left;
+  color: #007bff;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+}
+
+.input-field {
+    width: 100%;
+    padding: 10px;
+    border-radius: 10px;
+    border: 1px solid #ccc;
+    box-sizing: border-box;
+}
+
+.auth-button {
+    width: 100%;
+    padding: 10px;
+    border: none;
+    border-radius: 20px;
+    background-color: #007bff;
+    color: #d6ecff;
+    font-size: 16px;
+    cursor: pointer;
+    margin-top: 20px;
+}
+
+.auth-button:hover {
+    background-color: #68b5ff;
+}
+
+.auth-link {
+    margin-top: 20px;
+    color: #1c1642;
+    link: #1c1642;
+
+}
+
+.error-message {
+    color: red;
+    margin-bottom: 15px;
+}
+
+h1{
+  font-family: "RandomGrotesque", cursive;
+  font-size: 30px;
+  letter-spacing: 1px
+}
+
+h2{
+  font-family: "RandomGrotesque", cursive;
+  font-size: 30px;
+  letter-spacing: 1px
+}
+
+label{
+  font-family: "RandomGrotesque", cursive;
+  font-size: 15px;
+}

@@ -1,0 +1,91 @@
+html, body {
+  margin: 0;
+  padding: 0;
+  height: 100%;
+  overflow: hidden;
+}
+
+@font-face {
+  font-family: "RandomGrotesque";
+  src: url("../fonts/RG.ttf") format("truetype");
+  font-weight: 100;
+}
+
+@font-face {
+  font-family: "MyFlora";
+  src: url("../fonts/Myflora.otf") format("opentype");
+  font-weight: 100;
+}
+
+.app {
+  display: flex;
+  flex-direction: column;
+  min-height: 100vh;
+}
+
+main {
+  flex-grow: 1;
+  overflow: hidden;
+}
+
+button {
+  margin-top: 10px;
+  border-radius: 20px;
+  padding: 10px 20px;
+  background-color: #007bff;
+  color: white;
+  border: none;
+  cursor: pointer;
+}
+
+button:disabled {
+  background-color: #ccc;
+}
+
+button:hover {
+    background-color: #68b5ff;
+}
+
+ul {
+  list-style-type: none;
+  padding: 0;
+}
+
+li {
+  display: flex;
+  align-items: center;
+  margin-bottom: 10px;
+}
+
+.header {
+  background-color: #f8f9fa;
+  padding: 10px;
+  border-bottom: 1px solid #ddd;
+  font-family: "Random Grotesque Slim Book", serif;
+}
+
+.header span {
+  text-align: left;
+  font-size: 30px;
+}
+
+.header a{
+  float: right;
+  position: relative;
+  top: 5px;
+}
+
+.footer {
+  background-color: #f8f9fa;
+  padding: 10px;
+  text-align: center;
+  border-top: 1px solid #ddd;
+  font-family: "Random Grotesque Slim Book", serif;
+  margin-top: auto;
+}
+
+.footer p {
+  margin: 0;
+}
+
+
